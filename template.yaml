@@ -1,0 +1,188 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS
+
+  Sample SAM Template for AWS
+
+Parameters:
+  TableName:
+    Type: String
+    Default: test-table
+  BucketName:
+    Type: String
+    Default: xxx
+#  CodeUri:
+#    Type: String
+#    Default: target/samson2.jar
+
+#TODO: Kolla scripten mm från booking å se vad dom gör med namn och referenser på AWS
+#TODO: ARN
+#TODO: API
+#TODO: Globals      (Ärvs till alla resources, behöver inte skrivas igen alls) lägg mer här, typ api, environment mm
+#TODO: CodeUri
+#TODO: PARAM1?
+#TODO: Grund path
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 200
+    MemorySize: 1024
+    Environment:
+      Variables:
+        PERSONS_TABLE_NAME: !Ref TableName
+        BUCKET_NAME: !Ref BucketName
+        ENVIRONMENT: production
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: target/samson2-1.0-SNAPSHOT.jar
+      Handler: helloworld.App::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: get
+
+  ListPersonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/samson2-1.0-SNAPSHOT.jar
+      Handler: helloworld.ListPersonsHandler::handleRequest
+      Runtime: java8
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: Value
+      Events:
+        ListPersons:
+          Type: Api
+          Properties:
+            Path: /list
+            Method: get
+          #  RestApiId: !Ref MyApi
+
+  GetPersonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/samson2-1.0-SNAPSHOT.jar
+      Handler: helloworld.GetPerson::handleRequest
+      Runtime: java8
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        GetPerson:
+          Type: Api
+          Properties:
+            Path: /get
+            Method: get
+          #  RestApiId: !Ref MyApi
+
+  CreatePersonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/samson2-1.0-SNAPSHOT.jar
+      Handler: helloworld.CreatePerson::handleRequest
+      Runtime: java8
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+        - S3ReadPolicy:
+            BucketName: !Ref BucketName
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        CreatePerson:
+          Type: Api
+          Properties:
+            Path: /create
+            Method: post
+         #   RestApiId: !Ref MyApi
+
+  SamsonDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: mittId
+          AttributeType: S
+        - AttributeName: firstName
+          AttributeType: S
+        - AttributeName: lastName
+          AttributeType: S
+        - AttributeName: age
+          AttributeType: S
+        - AttributeName: sex
+          AttributeType: S
+      KeySchema:
+        - AttributeName: mittId
+          KeyType: HASH
+        - AttributeName: firstName
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+        - IndexName: ageOfSex
+          KeySchema:
+            - AttributeName: sex
+              KeyType: HASH
+            - AttributeName: age
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      LocalSecondaryIndexes:
+        - IndexName: identity
+          KeySchema:
+            - AttributeName: mittId
+              KeyType: HASH
+            - AttributeName: lastName
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  #HelloWorldApi:
+   # Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    #Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  ListPersonsFunction:
+    Description: "List Persons Lambda Function ARN"
+    Value: !GetAtt ListPersonsFunction.Arn
+  GetPersonFunction:
+    Description: "Get Person Lambda Function ARN"
+    Value: !GetAtt GetPersonFunction.Arn
+  CreatePersonFunction:
+    Description: "Create Person Lambda Function ARN"
+    Value: !GetAtt CreatePersonFunction.Arn
+
+
+  #HelloWorldFunctionIamRole:
+   # Description: "Implicit IAM Role created for Hello World function"
+    #Value: !GetAtt HelloWorldFunctionRole.Arn

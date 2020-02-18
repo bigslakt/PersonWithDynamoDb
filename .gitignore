@@ -1,0 +1,28 @@
+.idea/
+*.iml
+*.iws
+
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+#Key files:
+*.pem
+*.csv
+*.crt
+*.key
+
+#enviromental variables for vue
+.env
+*.env
+.env*
+
+#packagedfiles:
+dependency-reduced-pom.xml
+packaged-template.yml
+packaged.yaml
+packaged.yml
