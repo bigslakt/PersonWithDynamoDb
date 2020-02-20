@@ -16,13 +16,11 @@ Parameters:
 #    Type: String
 #    Default: target/samson2.jar
 
-#TODO: Kolla scripten mm från booking å se vad dom gör med namn och referenser på AWS
 #TODO: ARN
 #TODO: API
 #TODO: Globals      (Ärvs till alla resources, behöver inte skrivas igen alls) lägg mer här, typ api, environment mm
 #TODO: CodeUri
 #TODO: PARAM1?
-#TODO: Grund path
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -90,7 +88,7 @@ Resources:
         GetPerson:
           Type: Api
           Properties:
-            Path: /get
+            Path: /get/{mittId}
             Method: get
           #  RestApiId: !Ref MyApi
 
@@ -106,9 +104,6 @@ Resources:
         - S3ReadPolicy:
             BucketName: !Ref BucketName
       MemorySize: 512
-      Environment:
-        Variables:
-          PARAM1: VALUE
       Events:
         CreatePerson:
           Type: Api

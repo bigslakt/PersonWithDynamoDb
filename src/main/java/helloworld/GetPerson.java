@@ -19,10 +19,11 @@ public class GetPerson implements RequestHandler<Map<String, Object>, GatewayRes
         try {
 
             Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");
-            String id = pathParameters.get("mittId");
+            String mittId = pathParameters.get("mittId");
+           // String firstName = pathParameters.get("firstName");
 
             Person person = new Person();
-            Person personResponse = person.get(id);
+            Person personResponse = person.get(mittId);
 
             return GatewayResponse.builder()
                     .addHeaders(headers)
